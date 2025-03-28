@@ -30,7 +30,14 @@
            :root {:fx/type :v-box
                   :padding 10
                   :spacing 10
-                  :children [{:fx/type :h-box
+                  :children [
+                  ;; Debug output display - keep this for troubleshooting
+                  {:fx/type :text-area
+                   :pref-height 30
+                   :editable false
+                   :text (str "Outputs: " (pr-str (:outputs plc-state)) " | Running: " (:running plc-state))}
+                  
+                  {:fx/type :h-box
                               :spacing 10
                               :alignment :center-left
                               :children [{:fx/type :button
@@ -63,7 +70,8 @@
                                       :text "Ladder Editor"
                                       :closable false
                                       :content {:fx/type ladder-editor/ladder-editor-view
-                                                :program program}}]}
+                                                :program program
+                                                :state plc-state}}]} ;; Pass state to ladder editor
                              
                              {:fx/type status-bar/status-bar-view
                               :state plc-state}]}}})

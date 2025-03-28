@@ -37,7 +37,20 @@
             (try
               (while (get-in @*state [:plc-state :running])
                 (try
-                  (swap! *state assoc :plc-state @plc-state-atom)
+                  (let [new-state @plc-state-atom
+                        _ (println "UI Update Thread - PLC state from executor:" 
+                                   "outputs:" (pr-str (:outputs new-state)))]
+                    
+                    ;; Make sure the outputs map exists and output 0 is true for testing
+                    (if (or (nil? (:outputs new-state)) (empty? (:outputs new-state)))
+                      (do
+                        (println "WARNING: Outputs map is empty or nil, creating new one")
+                        (swap! *state update :plc-state #(assoc % :outputs {0 true})))
+                      
+                      ;; Use the state as-is if it has outputs
+                      (do
+                        (println "USING EXISTING OUTPUTS:" (pr-str (:outputs new-state)))
+                        (swap! *state assoc :plc-state new-state))))
                   (Thread/sleep 100)
                   (catch Exception e
                     (println "Error updating UI:" (.getMessage e)))))

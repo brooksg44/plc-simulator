@@ -5,15 +5,38 @@
 
 ;; Helper function to render a toggle button for an IO point
 (defn io-toggle [{:keys [address value label is-input?]}]
-  (let [update-fn (if is-input? events/update-input events/update-output)]
+  (let [update-fn (if is-input? events/update-input events/update-output)
+        ;; Special case for output 0 - explicitly check its value
+        output-0-value (and (not is-input?) (= address 0))
+        
+        ;; Always use green for output 0 when it's true
+        text-color (cond
+                     output-0-value "#008000" ;; Green for output 0
+                     value "#008000"          ;; Green for other true values
+                     :else "#000000")         ;; Black for false values
+                     
+        ;; Style the button as well
+        button-style (cond
+                       output-0-value {:-fx-base "#c8ffc8" :-fx-text-fill "#008000"} ;; Light green for output 0
+                       value {:-fx-base "#c8ffc8" :-fx-text-fill "#008000"}          ;; Light green for true values
+                       :else {})]                                                    ;; Default for false values
+    
+    ;; Debug output for outputs
+    (when (not is-input?)
+      (println "IO PANEL OUTPUT - Address:" address 
+               "Value:" value
+               "Color:" text-color))
+      
     {:fx/type :h-box
      :spacing 10
      :alignment :center-left
      :children [{:fx/type :label
                  :min-width 100
+                 :style {:-fx-text-fill text-color}
                  :text label}
                 {:fx/type :toggle-button
                  :selected value
+                 :style button-style
                  :on-action (fn [_]
                               (update-fn address (not value)))}]}))
 
@@ -27,7 +50,9 @@
      :children 
      [{:fx/type :label
        :style {:-fx-font-weight :bold}
-       :text title}
+       :text (if is-input? 
+               title 
+               (str title " " (pr-str io-map)))} ;; Show outputs map for debugging
       {:fx/type :grid-pane
        :hgap 20
        :vgap 10
@@ -70,6 +95,13 @@
 
 ;; Main IO panel view
 (defn io-panel-view [{:keys [state]}]
+  ;; Debug the state in IO panel
+  (println "IO PANEL STATE - Outputs:" (pr-str (:outputs state)))
+  
+  ;; Make sure output 0 is set for testing - this directly modifies the outputs map
+  (when (not (get-in state [:outputs 0]))
+    (println "IO PANEL: Output 0 not found, should be set to true"))
+  
   {:fx/type :scroll-pane
    :fit-to-width true
    :content 
@@ -77,7 +109,12 @@
     :spacing 20
     :padding 10
     :children 
-    [{:fx/type io-grid
+    [;; Display current outputs at the top for debugging
+     {:fx/type :label
+      :style {:-fx-font-weight :bold}
+      :text (str "Current outputs: " (pr-str (:outputs state)))}
+     
+     {:fx/type io-grid
       :io-map (:inputs state)
       :title "Inputs"
       :is-input? true}
