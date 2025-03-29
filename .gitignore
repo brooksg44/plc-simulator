@@ -1,13 +1,38 @@
-/target
-/classes
-/checkouts
-profiles.clj
-pom.xml
-pom.xml.asc
+# Clojure
+.cpcache/
+.nrepl-port
+.nrepl-history
+.cpcache/
+target/
+classes/
+checkouts/
+pom.xml.bak
 *.jar
 *.class
 /.lein-*
 /.nrepl-port
-/.prepl-port
+/.nrepl-history
+
+# IDE
+.cursor/
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+profiles.clj
+pom.xml
+pom.xml.asc
 .hgignore
 .hg/
+.clj-kondo/
+.lsp/
